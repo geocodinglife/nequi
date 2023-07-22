@@ -6,10 +6,11 @@ RSpec.describe Nequi do
     Nequi::Configuration.new.tap do |config|
       config.auth_uri = 'https://example.com/auth'
       config.auth_grant_type = 'client_credentials'
-      config.client_id = 'your_client_id'
-      config.client_secret = 'your_client_secret'
+      config.client_id = 'fake_client_id'
+      config.client_secret = 'fake_client_secret'
       config.api_base_path = 'https://api.example.com'
-      config.api_key = 'your_api_key'
+      config.api_key = 'fake_api_key'
+      config.phone = ENV['NEQUI_PHONE']
       config.unregisteredpayment_endpoint = '/unregisteredpayment'
     end
   end
@@ -28,8 +29,15 @@ RSpec.describe Nequi do
 
   describe '.get_token' do
     it 'returns a valid token' do
-      # Assuming you have a real token generation endpoint at 'https://example.com/auth'
       VCR.use_cassette('nequi_token') do
+        # You can stub the HTTP response here with fake token data instead of hitting the real endpoint
+        allow(HTTParty).to receive(:post).and_return(
+          OpenStruct.new(
+            code: 200,
+            body: { 'access_token' => 'fake_access_token', 'token_type' => 'Bearer' }.to_json
+          )
+        )
+
         token = Nequi.get_token
         expect(token).not_to be_nil
         expect(token[:access_token]).not_to be_nil
@@ -47,6 +55,14 @@ RSpec.describe Nequi do
       phone = '3203850750'
 
       VCR.use_cassette('nequi_payment_success') do
+        # You can stub the HTTP response here with fake response data instead of hitting the real endpoint
+        allow(HTTParty).to receive(:post).and_return(
+          OpenStruct.new(
+            code: 200,
+            body: { 'ResponseMessage' => { 'ResponseHeader' => { 'Status' => { 'StatusCode' => '200' } } } }.to_json
+          )
+        )
+
         logs = Nequi.call(amount, phone)
 
         expect(logs).to include({ 'type' => 'info', 'msg' => 'Ready to send Petitions' })
@@ -60,4 +76,3 @@ RSpec.describe Nequi do
     # Add more tests to cover different scenarios, such as failed requests, invalid responses, etc.
   end
 end
-
