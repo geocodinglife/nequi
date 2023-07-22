@@ -10,7 +10,7 @@ RSpec.describe Nequi do
       config.client_secret = 'fake_client_secret'
       config.api_base_path = 'https://api.example.com'
       config.api_key = 'fake_api_key'
-      config.phone = ENV['NEQUI_PHONE']
+      config.phone = '3720000186'
       config.unregisteredpayment_endpoint = '/unregisteredpayment'
     end
   end

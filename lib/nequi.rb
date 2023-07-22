@@ -21,9 +21,8 @@ module Nequi
   end
 
   class Configuration
-    attr_accessor :auth_uri, :phone, :nequi_phone, :auth_grant_type,
-                  :client_id, :client_secret, :api_base_path, :api_key,
-                  :unregisteredpayment_endpoint
+    attr_accessor :auth_uri, :auth_grant_type, :unregisteredpayment_endpoint,
+                  :client_id, :client_secret, :api_base_path, :api_key
   end
 
   NEQUI_STATUS_CODE_SUCCESS = '200'.freeze
