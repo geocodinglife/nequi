@@ -63,7 +63,7 @@ module Nequi
     @token
   end
 
-  def self.call(amount, phone)
+  def self.charge(amount, phone)
     current_time = Time.now
     formatted_timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S.%6N %z')
     message_id = SecureRandom.uuid
