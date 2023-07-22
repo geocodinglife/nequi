@@ -26,7 +26,6 @@ module Nequi
   end
 
   NEQUI_STATUS_CODE_SUCCESS = '200'.freeze
-  format :json
 
   def self.get_token
     return @token if @token
