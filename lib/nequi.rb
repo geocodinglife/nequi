@@ -41,7 +41,8 @@ module Nequi
 
     response = HTTParty.post(configuration.auth_uri, body: body, headers: headers)
 
-    raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}" unless (response.code.to_s.include?('200') && !response.body.empty?)
+    raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}" unless (response.code == 200 && !response.body.empty?)
+
     response_body = JSON.parse(response.body)
     @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 2.hours }
   end
