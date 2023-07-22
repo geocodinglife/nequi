@@ -6,6 +6,4 @@ Nequi.configure do |config|
   config.api_base_path = ENV['NEQUI_API_BASE_PATH']
   config.api_key = ENV['NEQUI_API_KEY']
   config.unregisteredpayment_endpoint = ENV['NEQUI_UNREGISTEREDPAYMENT_ENDPOINT']
-  config.phone = ENV['PHONE']
-  config.nequi_phone = ENV['NEQUI_PHONE']
 end
