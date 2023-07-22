@@ -4,7 +4,7 @@ require_relative "lib/nequi/version"
 
 Gem::Specification.new do |spec|
   spec.name = "nequi"
-  spec.version = "0.1.1"
+  spec.version = "0.1.2"
   spec.authors = ["geocodinglife"]
   spec.email = ["geocodinglife@gmail.com"]
 
