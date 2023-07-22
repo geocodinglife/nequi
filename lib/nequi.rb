@@ -7,6 +7,8 @@ module Nequi
   require 'securerandom'
   require 'httparty'
   require 'base64'
+  require 'active_support/core_ext/integer/time'
+
   include HTTParty
 
   class << self
@@ -20,6 +22,8 @@ module Nequi
 
   class Configuration
     attr_accessor :auth_uri,
+                  :phone,
+                  :nequi_phone,
                   :auth_grant_type,
                   :client_id,
                   :client_secret,
@@ -42,7 +46,7 @@ module Nequi
 
     body = { 'grant_type' => configuration.auth_grant_type }
 
-    response = HTTParty.post(configuration.auth_url, body: body, headers: headers)
+    response = HTTParty.post(configuration.auth_uri, body: body, headers: headers)
 
     if response.code == 200 && !response.body.empty?
       response_body = JSON.parse(response.body)
@@ -103,21 +107,26 @@ module Nequi
       body: body,
       headers: headers)
 
-    if response.code.to_i == 200 && !response.body.empty?
+    response_body = JSON.parse(response.body)
+    puts "JSON Response: #{response_body.inspect}"
+    puts "Response Message: #{response_body['ResponseMessage'].inspect}"
+    puts "Response Body: #{response_body['ResponseMessage']['ResponseBody'].inspect}"
+
+    if response.code.to_i == 200 && !response_body['ResponseMessage']['ResponseBody'].nil?
       logs << { 'type' => 'info', 'msg' => "Petition returned HTTP 200" }
 
       begin
-        json_response = JSON.parse(response.body)
+        any_data = response_body['ResponseMessage']['ResponseBody']['any']
+        puts "Any: #{any_data.inspect}"
 
-        status = json_response['ResponseMessage']['ResponseHeader']['Status']
-
+        status = response_body['ResponseMessage']['ResponseHeader']['Status']
         status_code = status ? status['StatusCode'] : ''
         status_desc = status ? status['StatusDesc'] : ''
 
         if status_code == '200'
           logs << { 'type' => 'success', 'msg' => 'Solicitud de pago realizada correctamente' }
 
-          payment = json_response['ResponseMessage']['ResponseBody']['any']['unregisteredPaymentRS']
+          payment = any_data['unregisteredPaymentRS']
           trn_id = payment ? payment['transactionId'].to_s.strip : ''
 
           logs << { 'type' => 'success', 'msg' => 'Id Transacción: ' + trn_id }
