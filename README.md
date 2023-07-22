@@ -1,51 +1,67 @@
+Sure! I've organized the text and fixed some spelling errors to make it look more professional:
+
 # Nequi
 
 Nequi: Payments with Push Notification
 
 ## Installation
 
-get the ques in Nequi: <https://conecta.nequi.com/?scrollspy=true>
-also you need to get a test phone number and download a testing application
-this needs to be aprobed in the slack chanel this is the link:
-<https://nequidev.slack.com/join/shared_invite/enQtMzc1Njc3NzU5MTExLTMxZjRiOGRkYTQzZmJjMGMxOTdhODg3NzcwZjUzOTE2OGNkZDI4NzZhNGI1MjgzMmQ4MTg2ZDBjNDc5NWRjYWI#/shared-invite/email>
+1. Get the keys for Nequi: [Nequi Developer Portal](https://conecta.nequi.com/?scrollspy=true)
+2. Obtain a test phone number and download a testing application. This needs to be approved in the Slack channel; use the following link to join: [Nequi Development Slack Channel](https://nequidev.slack.com/join/shared_invite/enQtMzc1Njc3NzU5MTExLTMxZjRiOGRkYTQzZmJjMGMxOTdhODg3NzcwZjUzOTE2OGNkZDI4NzZhNGI1MjgzMmQ4MTg2ZDBjNDc5NWRjYWI#/shared-invite/email)
 
-``
-  gem 'nequi'
+### Gems and Configuration
 
-  gem 'dotenv-rails'
-  
-  bundle install
+Add the following gems to your Gemfile:
 
-  create .env
+```ruby
+gem 'nequi'
+gem 'dotenv-rails'
+```
 
-  add your keys to your .env
-  
-  PHONE=
-  NEQUI_API_KEY=
-  NEQUI_CLIENT_ID=
-  NEQUI_CLIENT_SECRET=
-  NEQUI_AUTH_URI=<https://oauth.sandbox.nequi.com/token>
-  NEQUI_AUTH_GRANT_TYPE=client_credentials
-  NEQUI_API_BASE_PATH=<https://api.sandbox.nequi.com>
+Then run:
 
-  add this code in your config/initializers/nequi.rb
+```bash
+bundle install
+```
 
-  Nequi.configure do |config|
-    config.auth_uri = ENV['NEQUI_AUTH_URI']
-    config.auth_grant_type = ENV['NEQUI_AUTH_GRANT_TYPE']
-    config.client_id = ENV['NEQUI_CLIENT_ID']
-    config.client_secret = ENV['NEQUI_CLIENT_SECRET']
-    config.api_base_path = ENV['NEQUI_API_BASE_PATH']
-    config.api_key = ENV['NEQUI_API_KEY']
-    config.unregisteredpayment_endpoint = ENV['NEQUI_UNREGISTEREDPAYMENT_ENDPOINT']
-    config.phone = ENV['PHONE']
-  end
+Create a `.env` file and add your keys to it:
 
-  on the controller can be used:
-    def create
-      logs = Nequi.charge(params[:amount], params[:phone].to_s)
-      redirect_to payment_request_url(id: 1, logs: logs)
-    end
-``
+```plaintext
+PHONE=YourPhoneNumberHere
+NEQUI_API_KEY=YourApiKeyHere
+NEQUI_CLIENT_ID=YourClientIdHere
+NEQUI_CLIENT_SECRET=YourClientSecretHere
+NEQUI_AUTH_URI=https://oauth.sandbox.nequi.com/token
+NEQUI_AUTH_GRANT_TYPE=client_credentials
+NEQUI_API_BASE_PATH=https://api.sandbox.nequi.com
+```
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Next, add the following code to your `config/initializers/nequi.rb` file:
+
+```ruby
+Nequi.configure do |config|
+  config.auth_uri = ENV['NEQUI_AUTH_URI']
+  config.auth_grant_type = ENV['NEQUI_AUTH_GRANT_TYPE']
+  config.client_id = ENV['NEQUI_CLIENT_ID']
+  config.client_secret = ENV['NEQUI_CLIENT_SECRET']
+  config.api_base_path = ENV['NEQUI_API_BASE_PATH']
+  config.api_key = ENV['NEQUI_API_KEY']
+  config.unregisteredpayment_endpoint = ENV['NEQUI_UNREGISTEREDPAYMENT_ENDPOINT']
+  config.phone = ENV['PHONE']
+end
+```
+
+## Usage
+
+In your controller, you can use the following code to create a payment:
+
+```ruby
+def create
+  logs = Nequi.charge(params[:amount], params[:phone].to_s)
+  redirect_to payment_request_url(id: 1, logs: logs)
+end
+```
+
+## License
+
+This gem is available as open-source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
