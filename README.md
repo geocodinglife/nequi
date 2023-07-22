@@ -1,35 +1,51 @@
 # Nequi
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/nequi`. To experiment with that code, run `bin/console` for an interactive prompt.
+Nequi: Payments with Push Notification
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+get the ques in Nequi: <https://conecta.nequi.com/?scrollspy=true>
+also you need to get a test phone number and download a testing application
+this needs to be aprobed in the slack chanel this is the link:
+<https://nequidev.slack.com/join/shared_invite/enQtMzc1Njc3NzU5MTExLTMxZjRiOGRkYTQzZmJjMGMxOTdhODg3NzcwZjUzOTE2OGNkZDI4NzZhNGI1MjgzMmQ4MTg2ZDBjNDc5NWRjYWI#/shared-invite/email>
 
-Install the gem and add to the application's Gemfile by executing:
+``
+  gem 'nequi'
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+  gem 'dotenv-rails'
+  
+  bundle install
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+  create .env
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+  add your keys to your .env
+  
+  PHONE=
+  NEQUI_API_KEY=
+  NEQUI_CLIENT_ID=
+  NEQUI_CLIENT_SECRET=
+  NEQUI_AUTH_URI=<https://oauth.sandbox.nequi.com/token>
+  NEQUI_AUTH_GRANT_TYPE=client_credentials
+  NEQUI_API_BASE_PATH=<https://api.sandbox.nequi.com>
 
-## Usage
+  add this code in your config/initializers/nequi.rb
 
-TODO: Write usage instructions here
+  Nequi.configure do |config|
+    config.auth_uri = ENV['NEQUI_AUTH_URI']
+    config.auth_grant_type = ENV['NEQUI_AUTH_GRANT_TYPE']
+    config.client_id = ENV['NEQUI_CLIENT_ID']
+    config.client_secret = ENV['NEQUI_CLIENT_SECRET']
+    config.api_base_path = ENV['NEQUI_API_BASE_PATH']
+    config.api_key = ENV['NEQUI_API_KEY']
+    config.unregisteredpayment_endpoint = ENV['NEQUI_UNREGISTEREDPAYMENT_ENDPOINT']
+    config.phone = ENV['PHONE']
+  end
 
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/nequi.
-
-## License
+  on the controller can be used:
+    def create
+      logs = Nequi.charge(params[:amount], params[:phone].to_s)
+      redirect_to payment_request_url(id: 1, logs: logs)
+    end
+``
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

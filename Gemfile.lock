@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    nequi (0.1.9)
+    nequi (0.2.0)
       dotenv-rails (~> 2.8, >= 2.8.1)
       httparty (~> 0.21.0)
       vcr (~> 6.2)
