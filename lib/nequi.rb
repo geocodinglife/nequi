@@ -21,14 +21,8 @@ module Nequi
   end
 
   class Configuration
-    attr_accessor :auth_uri,
-                  :phone,
-                  :nequi_phone,
-                  :auth_grant_type,
-                  :client_id,
-                  :client_secret,
-                  :api_base_path,
-                  :api_key,
+    attr_accessor :auth_uri, :phone, :nequi_phone, :auth_grant_type,
+                  :client_id, :client_secret, :api_base_path, :api_key,
                   :unregisteredpayment_endpoint
   end
 
@@ -48,19 +42,9 @@ module Nequi
 
     response = HTTParty.post(configuration.auth_uri, body: body, headers: headers)
 
-    if response.code == 200 && !response.body.empty?
-      response_body = JSON.parse(response.body)
-
-      @token = {
-        access_token: response_body['access_token'],
-        token_type: response_body['token_type'],
-        expires_at: Time.now + 2.hours #response_body['expires_in'].to_i.seconds
-      }
-
-    else
-      raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}"
-    end
-    @token
+    raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}" unless (response.code == 200 && !response.body.empty?)
+    response_body = JSON.parse(response.body)
+    @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 2.hours }
   end
 
   def self.charge(amount, phone)
@@ -101,35 +85,31 @@ module Nequi
       }
     }.to_json
 
-    logs = [{ 'type' => 'info', 'msg' => "Ready to send Petitions" }]
-    response = HTTParty.post(
-      "#{configuration.api_base_path + configuration.unregisteredpayment_endpoint}",
-      body: body,
-      headers: headers)
+    logs = [{ 'type' => 'information', 'message' => "Ready to send Petitions" }]
+
+    unregisteredpayment = configuration.api_base_path + configuration.unregisteredpayment_endpoint
+
+    response = HTTParty.post(unregisteredpayment, body: body, headers: headers)
 
     response_body = JSON.parse(response.body)
-    puts "JSON Response: #{response_body.inspect}"
-    puts "Response Message: #{response_body['ResponseMessage'].inspect}"
-    puts "Response Body: #{response_body['ResponseMessage']['ResponseBody'].inspect}"
 
-    if response.code.to_i == 200 && !response_body['ResponseMessage']['ResponseBody'].nil?
-      logs << { 'type' => 'info', 'msg' => "Petition returned HTTP 200" }
+    if response.code.include?("200") && !response_body['ResponseMessage']['ResponseBody'].nil?
+      logs << { 'type' => 'information', 'message' => "Petition returned HTTP 200" }
 
       begin
         any_data = response_body['ResponseMessage']['ResponseBody']['any']
-        puts "Any: #{any_data.inspect}"
 
         status = response_body['ResponseMessage']['ResponseHeader']['Status']
         status_code = status ? status['StatusCode'] : ''
         status_desc = status ? status['StatusDesc'] : ''
 
-        if status_code == '200'
-          logs << { 'type' => 'success', 'msg' => 'Solicitud de pago realizada correctamente' }
+        if status_code.include?('200')
+          logs << { 'type' => 'success', 'message' => 'Payment request send success fully' }
 
           payment = any_data['unregisteredPaymentRS']
           trn_id = payment ? payment['transactionId'].to_s.strip : ''
 
-          logs << { 'type' => 'success', 'msg' => 'Id Transacción: ' + trn_id }
+          logs << { 'type' => 'success', 'message' => 'Transaction Id: ' + trn_id }
         else
           raise 'Error ' + status_code + ' = ' + status_desc
         end
