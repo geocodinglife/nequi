@@ -40,7 +40,7 @@ module Nequi
 
     response = HTTParty.post(configuration.auth_uri, body: body, headers: headers)
 
-    raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}" unless (response.code == 200 && !response.body.empty?)
+    raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}" unless (response.code.to_i == 200 && !response.body.empty?)
 
     response_body = JSON.parse(response.body)
     @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 2.hours }
@@ -92,7 +92,7 @@ module Nequi
 
     response_body = JSON.parse(response.body)
 
-    if response.code.include?("200") && !response_body['ResponseMessage']['ResponseBody'].nil?
+    if response.code.to_i == 200 && !response_body['ResponseMessage']['ResponseBody'].nil?
       logs << { 'type' => 'information', 'message' => "Petition returned HTTP 200" }
 
       begin
@@ -102,7 +102,7 @@ module Nequi
         status_code = status ? status['StatusCode'] : ''
         status_desc = status ? status['StatusDesc'] : ''
 
-        if status_code.include?('200')
+        if status_code == '200'
           logs << { 'type' => 'success', 'message' => 'Payment request send success fully' }
 
           payment = any_data['unregisteredPaymentRS']
