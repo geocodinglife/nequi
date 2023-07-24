@@ -7,6 +7,7 @@ module Nequi
   require 'securerandom'
   require 'httparty'
   require 'base64'
+  require 'json'
   require 'active_support/core_ext/integer/time'
 
   include HTTParty
@@ -43,7 +44,7 @@ module Nequi
     raise "Failed to authenticate with Nequi. HTTP status code: #{response.code}" unless (response.code.to_i == 200 && !response.body.empty?)
 
     response_body = JSON.parse(response.body)
-    @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 2.hours }
+    @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 15.minutes }
   end
 
   def self.charge(amount, phone)
@@ -66,8 +67,8 @@ module Nequi
           "MessageID" => message_id,
           "ClientID" => configuration.client_id,
           "Destination" => {
-            "ServiceName" => "PaymentsService",
-            "ServiceOperation" => "unregisteredPayment",
+          "ServiceName" => "PaymentsService",
+          "ServiceOperation" => "unregisteredPayment",
             "ServiceRegion" => "C001",
             "ServiceVersion" => "1.2.0"
           }
@@ -75,9 +76,9 @@ module Nequi
         "RequestBody" => {
           "any" => {
             "unregisteredPaymentRQ" => {
-              "phoneNumber" => "#{phone}",
+              "phoneNumber" => phone,
               "code" => "NIT_1",
-              "value" => "#{amount}"
+              "value" => amount
             }
           }
         }
