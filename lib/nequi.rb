@@ -4,7 +4,6 @@ require_relative "nequi/version"
 
 module Nequi
   class Error < StandardError; end
-  require 'securerandom'
   require 'httparty'
   require 'base64'
   require 'json'
@@ -50,7 +49,9 @@ module Nequi
   def self.charge(amount, phone)
     current_time = Time.now
     formatted_timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S.%6N %z')
-    message_id = SecureRandom.uuid
+    random_number = rand(1_000_000_000..9_999_999_999).to_s
+    random_number = random_number.rjust(10, '0')
+
 
     headers = {
       'Content-Type' => 'application/json',
@@ -64,8 +65,8 @@ module Nequi
         "RequestHeader" => {
           "Channel" => "PNP04-C001",
           "RequestDate" => formatted_timestamp,
-          "MessageID" => message_id,
-          "ClientID" => configuration.client_id,
+          "MessageID" => random_number,
+          "ClientID" => "#{configuration.client_id}",
           "Destination" => {
           "ServiceName" => "PaymentsService",
           "ServiceOperation" => "unregisteredPayment",
@@ -76,9 +77,9 @@ module Nequi
         "RequestBody" => {
           "any" => {
             "unregisteredPaymentRQ" => {
-              "phoneNumber" => phone,
+              "phoneNumber" => "#{phone}",
               "code" => "NIT_1",
-              "value" => amount
+              "value" => "#{amount}"
             }
           }
         }
