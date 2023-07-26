@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    nequi (0.2.1)
+    nequi (0.2.2)
+      delayed_job_active_record (~> 4.1, >= 4.1.7)
       dotenv-rails (~> 2.8, >= 2.8.1)
       httparty (~> 0.21.0)
       vcr (~> 6.2)
@@ -23,6 +24,11 @@ GEM
       erubi (~> 1.4)
       rails-dom-testing (~> 2.0)
       rails-html-sanitizer (~> 1.1, >= 1.2.0)
+    activemodel (7.0.6)
+      activesupport (= 7.0.6)
+    activerecord (7.0.6)
+      activemodel (= 7.0.6)
+      activesupport (= 7.0.6)
     activesupport (7.0.6)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
@@ -36,6 +42,11 @@ GEM
     crack (0.4.5)
       rexml
     crass (1.0.6)
+    delayed_job (4.1.11)
+      activesupport (>= 3.0, < 8.0)
+    delayed_job_active_record (4.1.7)
+      activerecord (>= 3.0, < 8.0)
+      delayed_job (>= 3.0, < 5)
     diff-lcs (1.5.0)
     dotenv (2.8.1)
     dotenv-rails (2.8.1)
@@ -143,6 +154,7 @@ PLATFORMS
   x86_64-darwin-20
 
 DEPENDENCIES
+  delayed_job_active_record (~> 4.1, >= 4.1.7)
   dotenv-rails
   nequi!
   rake (~> 13.0)

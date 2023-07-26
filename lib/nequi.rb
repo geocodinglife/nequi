@@ -7,6 +7,7 @@ module Nequi
   require 'httparty'
   require 'base64'
   require 'json'
+  require 'time'
   require 'active_support/core_ext/integer/time'
 
   include HTTParty
@@ -46,12 +47,11 @@ module Nequi
     @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 15.minutes }
   end
 
-  def self.charge(amount, phone)
-    current_time = Time.now
-    formatted_timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S.%6N %z')
-    random_number = rand(1_000_000_000..9_999_999_999).to_s
-    random_number = random_number.rjust(10, '0')
+  def self.payment_request(amount, phone, product_id)
 
+    current_time = Time.now
+    utc_time = current_time.utc
+    formatted_timestamp = utc_time.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
 
     headers = {
       'Content-Type' => 'application/json',
@@ -64,8 +64,8 @@ module Nequi
       "RequestMessage" => {
         "RequestHeader" => {
           "Channel" => "PNP04-C001",
-          "RequestDate" => formatted_timestamp,
-          "MessageID" => random_number,
+          "RequestDate" => "#{formatted_timestamp}",
+          "MessageID" => "#{product_id}",
           "ClientID" => "#{configuration.client_id}",
           "Destination" => {
           "ServiceName" => "PaymentsService",
@@ -106,11 +106,11 @@ module Nequi
 
         if status_code == '200'
           logs << { 'type' => 'success', 'message' => 'Payment request send success fully' }
-
           payment = any_data['unregisteredPaymentRS']
           trn_id = payment ? payment['transactionId'].to_s.strip : ''
 
           logs << { 'type' => 'success', 'message' => 'Transaction Id: ' + trn_id }
+          status_check_job = StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, @token[:access_token], code_qr) #---> I need this code_qr from the return request
         else
           raise 'Error ' + status_code + ' = ' + status_desc
         end

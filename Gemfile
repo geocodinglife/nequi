@@ -15,4 +15,6 @@ gem "vcr", "~> 6.2"
 
 gem "webmock"
 
+gem 'delayed_job_active_record', '~> 4.1', '>= 4.1.7'
+
 gem 'dotenv-rails', groups: [:development, :test]

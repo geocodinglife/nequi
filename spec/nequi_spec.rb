@@ -8,10 +8,11 @@ RSpec.describe Nequi do
       config.auth_grant_type = 'client_credentials'
       config.client_id = 'fake_client_id'
       config.client_secret = 'fake_client_secret'
-      config.api_base_path = 'https://api.example.com'
+      config.api_base_path = 'https://api.sandbox.nequi.com/payments/v2'
       config.api_key = 'fake_api_key'
       config.phone = '3720000186'
-      config.unregisteredpayment_endpoint = '/unregisteredpayment'
+      config.unregisteredpayment_endpoint = '/-services-paymentservice-unregisteredpayment'
+PHONE=3720000186
     end
   end
 

@@ -1,5 +1,3 @@
-Sure! I've organized the text and fixed some spelling errors to make it look more professional:
-
 # Nequi
 
 Nequi: Payments with Push Notification
@@ -33,7 +31,7 @@ NEQUI_CLIENT_ID=YourClientIdHere
 NEQUI_CLIENT_SECRET=YourClientSecretHere
 NEQUI_AUTH_URI=https://oauth.sandbox.nequi.com/token
 NEQUI_AUTH_GRANT_TYPE=client_credentials
-NEQUI_API_BASE_PATH=https://api.sandbox.nequi.com
+NEQUI_API_BASE_PATH=https://api.sandbox.nequi.com/payments/v2
 ```
 
 Next, add the following code to your `config/initializers/nequi.rb` file:
