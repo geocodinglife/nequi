@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dotenv-rails', '~> 2.8', '>= 2.8.1'
   spec.add_dependency 'vcr', '~> 6.2'
   spec.add_dependency 'webmock', '~> 3.18', '>= 3.18.1'
-  spec.add_dependency 'delayed_job_active_record', '~> 4.1', '>= 4.1.7'
+  spec.add_dependency 'sidekiq', '~> 7.1', '>= 7.1.2'
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

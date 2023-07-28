@@ -52,6 +52,10 @@ Nequi.configure do |config|
 end
 ```
 
+```
+  bundle exec sidekiq
+```
+
 ## Usage
 
 In your controller, you can use the following code to create a payment:
