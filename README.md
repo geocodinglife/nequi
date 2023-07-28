@@ -32,6 +32,8 @@ NEQUI_CLIENT_SECRET=YourClientSecretHere
 NEQUI_AUTH_URI=https://oauth.sandbox.nequi.com/token
 NEQUI_AUTH_GRANT_TYPE=client_credentials
 NEQUI_API_BASE_PATH=https://api.sandbox.nequi.com/payments/v2
+NEQUI_STATUS_PAYMENT=/-services-paymentservice-getstatuspayment
+NEQUI_UNREGISTEREDPAYMENT_ENDPOINT=/-services-paymentservice-unregisteredpayment
 ```
 
 Next, add the following code to your `config/initializers/nequi.rb` file:
@@ -45,6 +47,7 @@ Nequi.configure do |config|
   config.api_base_path = ENV['NEQUI_API_BASE_PATH']
   config.api_key = ENV['NEQUI_API_KEY']
   config.unregisteredpayment_endpoint = ENV['NEQUI_UNREGISTEREDPAYMENT_ENDPOINT']
+  config.nequi_status_payment = ENV['NEQUI_STATUS_PAYMENT']
   config.phone = ENV['PHONE']
 end
 ```

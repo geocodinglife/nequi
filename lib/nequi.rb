@@ -23,14 +23,12 @@ module Nequi
 
   class Configuration
     attr_accessor :auth_uri, :phone, :auth_grant_type, :unregisteredpayment_endpoint,
-                  :client_id, :client_secret, :api_base_path, :api_key
+                  :client_id, :client_secret, :api_base_path, :api_key, :nequi_status_payment
   end
 
   NEQUI_STATUS_CODE_SUCCESS = '200'.freeze
 
   def self.get_token
-    return @token if @token
-
     headers = {
       'Content-Type' => 'application/x-www-form-urlencoded',
       'Accept' => 'application/json',
@@ -48,15 +46,16 @@ module Nequi
   end
 
   def self.payment_request(amount, phone, product_id)
-
     current_time = Time.now
     utc_time = current_time.utc
     formatted_timestamp = utc_time.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
 
+    access_token = get_token[:access_token]
+
     headers = {
       'Content-Type' => 'application/json',
       'Accept' => 'application/json',
-      'Authorization' => "Bearer #{get_token[:access_token]}",
+      'Authorization' => "Bearer #{access_token}",
       'x-api-key' => configuration.api_key
     }
 
@@ -64,9 +63,9 @@ module Nequi
       "RequestMessage" => {
         "RequestHeader" => {
           "Channel" => "PNP04-C001",
-          "RequestDate" => "#{formatted_timestamp}",
-          "MessageID" => "#{product_id}",
-          "ClientID" => "#{configuration.client_id}",
+          "RequestDate" => formatted_timestamp,
+          "MessageID" => product_id,
+          "ClientID" => configuration.client_id,
           "Destination" => {
           "ServiceName" => "PaymentsService",
           "ServiceOperation" => "unregisteredPayment",
@@ -77,51 +76,33 @@ module Nequi
         "RequestBody" => {
           "any" => {
             "unregisteredPaymentRQ" => {
-              "phoneNumber" => "#{phone}",
+              "phoneNumber" => phone,
               "code" => "NIT_1",
-              "value" => "#{amount}"
+              "value" => amount
             }
           }
         }
       }
     }.to_json
 
-    logs = [{ 'type' => 'information', 'message' => "Ready to send Petitions" }]
+   unregisteredpayment = configuration.api_base_path + configuration.unregisteredpayment_endpoint
 
-    unregisteredpayment = configuration.api_base_path + configuration.unregisteredpayment_endpoint
+   response = HTTParty.post(unregisteredpayment, body: body, headers: headers)
 
-    response = HTTParty.post(unregisteredpayment, body: body, headers: headers)
+   response_status = response["ResponseMessage"]["ResponseHeader"]["Status"]
+   status_code = response_status["StatusCode"]
+   status_description =  response_status["StatusDesc"]
 
-    response_body = JSON.parse(response.body)
+    return  {
+      type: 'Error',
+      status: status_code,
+      api_status: status_code,
+      message: status_description
+    } unless response_status.include?({ "StatusCode"=>"0", "StatusDesc"=>"SUCCESS" })
 
-    if response.code.to_i == 200 && !response_body['ResponseMessage']['ResponseBody'].nil?
-      logs << { 'type' => 'information', 'message' => "Petition returned HTTP 200" }
-
-      begin
-        any_data = response_body['ResponseMessage']['ResponseBody']['any']
-
-        status = response_body['ResponseMessage']['ResponseHeader']['Status']
-        status_code = status ? status['StatusCode'] : ''
-        status_desc = status ? status['StatusDesc'] : ''
-
-        if status_code == '200'
-          logs << { 'type' => 'success', 'message' => 'Payment request send success fully' }
-          payment = any_data['unregisteredPaymentRS']
-          trn_id = payment ? payment['transactionId'].to_s.strip : ''
-
-          logs << { 'type' => 'success', 'message' => 'Transaction Id: ' + trn_id }
-          status_check_job = StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, @token[:access_token], code_qr) #---> I need this code_qr from the return request
-        else
-          raise 'Error ' + status_code + ' = ' + status_desc
-        end
-
-      rescue StandardError => e
-        raise e
-      end
-    else
-      raise 'Unable to connect to Nequi, please check the information sent.'
-    end
-
-    logs
+    response_any = response["ResponseMessage"]["ResponseBody"]["any"]
+    success_id = response_any["unregisteredPaymentRS"]["transactionId"]
+    status_check_job = StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, access_token, success_id)
+    { type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
   end
 end
