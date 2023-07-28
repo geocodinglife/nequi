@@ -8,8 +8,19 @@ module Nequi
     require 'time'
     require 'active_support/core_ext/integer/time'
 
+    MAX_RETRIES = 4
 
     def perform
+      
+      @attempts ||= 0
+
+      if @attempts >= MAX_RETRIES
+        logs = { type: 'error', message: 'Job stopped due to maximum retries exceeded.' }
+        Rails.logger.error(logs)
+        return
+      end
+
+      @attempts += 1
 
       current_time = Time.now
       utc_time = current_time.utc
@@ -55,13 +66,13 @@ module Nequi
       status_code = response_status["StatusCode"]
       status_description =  response_status["StatusDesc"]
 
-
-      if status_description =  response_status["StatusDesc"] == "SUCCESS"
-        logs = { type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
-
+      if status_description == 'SUCCESS'
+        logs = { type: 'success', status: response.code, api_status: status_code, message: 'Payment request sent successfully' }
         Rails.logger.info(logs)
       else
-         { type: 'success', status: response.code, api_status: status_code, message: ":wClient don't accept charge"}
+        StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, token, success_id)
+        logs = { type: 'info', message: 'Retrying the job in 2 minutes...' }
+        Rails.logger.info(logs)
       end
     end
   end

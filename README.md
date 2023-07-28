@@ -67,7 +67,7 @@ In your controller, you can use the following code to create a payment:
     if logs[:status] == 200 && logs[:api_status] == '0'
       redirect_to payment_request_path(id: 1), {message: "Pay in nequi"}
     else
-      redirect_to root_path, {message: "Error in the pition payment"}
+      redirect_to root_path, {message: "Payment request Error #{logs[:message]}"}
     end
   end
 ```

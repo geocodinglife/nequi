@@ -102,7 +102,7 @@ module Nequi
 
     response_any = response["ResponseMessage"]["ResponseBody"]["any"]
     success_id = response_any["unregisteredPaymentRS"]["transactionId"]
-    # Nequi::StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, access_token, success_id)
+    Nequi::StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, access_token, success_id)
     { type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
   end
 end
