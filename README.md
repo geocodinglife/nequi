@@ -61,10 +61,15 @@ end
 In your controller, you can use the following code to create a payment:
 
 ```ruby
-def create
-  logs = Nequi.charge(params[:amount], params[:phone].to_s)
-  redirect_to payment_request_url(id: 1, logs: logs)
-end
+  def create
+    logs = Nequi.payment_request(params[:amount].to_i.to_s, params[:phone], params[:product_id])
+
+    if logs[:status] == 200 && logs[:api_status] == '0'
+      redirect_to payment_request_path(id: 1), {message: "Pay in nequi"}
+    else
+      redirect_to root_path, {message: "Error in the pition payment"}
+    end
+  end
 ```
 
 ## License
