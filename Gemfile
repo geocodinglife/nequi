@@ -15,4 +15,6 @@ gem "vcr", "~> 6.2"
 
 gem "webmock"
 
+gem 'sidekiq', '~> 7.1', '>= 7.1.2'
+
 gem 'dotenv-rails', groups: [:development, :test]
