@@ -3,6 +3,12 @@
 require_relative "nequi/version"
 
 module Nequi
+  ERRORS_MESSAGES = [
+  {
+    "20-07A": "Sorry Nequi is not available Now, We will try your payment in a few minutes."
+  }
+]
+
   class Error < StandardError; end
   require 'httparty'
   require 'base64'
@@ -43,6 +49,8 @@ module Nequi
 
     response_body = JSON.parse(response.body)
     @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 15.minutes }
+    ap @token
+    @token
   end
 
   def self.payment_request(amount, phone, product_id)
@@ -91,13 +99,17 @@ module Nequi
 
    response_status = response["ResponseMessage"]["ResponseHeader"]["Status"]
    status_code = response_status["StatusCode"]
-   status_description =  response_status["StatusDesc"]
+   status_description = response_status["StatusDesc"]
+
+   error_message = ERRORS_MESSAGES.find { |message| message[:"#{status_code}"] }.values.first
+
 
     return  {
       type: 'Error',
       status: status_code,
       api_status: status_code,
-      message: status_description
+      message: status_description,
+      customer_message: error_message
     } unless response_status.include?({ "StatusCode"=>"0", "StatusDesc"=>"SUCCESS" })
 
     response_any = response["ResponseMessage"]["ResponseBody"]["any"]
