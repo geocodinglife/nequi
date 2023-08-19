@@ -3,11 +3,9 @@
 require_relative "nequi/version"
 
 module Nequi
-  ERRORS_MESSAGES = [
-  {
-    "20-07A": "Sorry Nequi is not available Now, We will try your payment in a few minutes."
-  }
-]
+  ERRORS_MESSAGES = {
+    "20-07A": "Nequi resive the payload but got an error from them."
+}
 
   class Error < StandardError; end
   require 'httparty'
@@ -49,8 +47,6 @@ module Nequi
 
     response_body = JSON.parse(response.body)
     @token = { access_token: response_body['access_token'], token_type: response_body['token_type'], expires_at: Time.now + 15.minutes }
-    ap @token
-    @token
   end
 
   def self.payment_request(amount, phone, product_id)
@@ -101,20 +97,16 @@ module Nequi
    status_code = response_status["StatusCode"]
    status_description = response_status["StatusDesc"]
 
-   error_message = ERRORS_MESSAGES.find { |message| message[:"#{status_code}"] }.values.first
-
 
     return  {
       type: 'Error',
       status: status_code,
-      api_status: status_code,
-      message: status_description,
-      customer_message: error_message
-    } unless response_status.include?({ "StatusCode"=>"0", "StatusDesc"=>"SUCCESS" })
+      message: ERRORS_MESSAGES[:"#{status_code}"] || "#{status_code} #{status_description}",
+    } unless response_status == { "StatusCode" => "0", "StatusDesc" => "SUCCESS" }
 
     response_any = response["ResponseMessage"]["ResponseBody"]["any"]
     success_id = response_any["unregisteredPaymentRS"]["transactionId"]
-    Nequi::StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, access_token, success_id)
-    { type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
+
+    {token: access_token, success_id: success_id, type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
   end
 end
