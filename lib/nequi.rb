@@ -3,6 +3,10 @@
 require_relative "nequi/version"
 
 module Nequi
+  ERRORS_MESSAGES = {
+    "20-07A": "Nequi resive the payload but got an error from them."
+}
+
   class Error < StandardError; end
   require 'httparty'
   require 'base64'
@@ -91,18 +95,18 @@ module Nequi
 
    response_status = response["ResponseMessage"]["ResponseHeader"]["Status"]
    status_code = response_status["StatusCode"]
-   status_description =  response_status["StatusDesc"]
+   status_description = response_status["StatusDesc"]
+
 
     return  {
       type: 'Error',
       status: status_code,
-      api_status: status_code,
-      message: status_description
-    } unless response_status.include?({ "StatusCode"=>"0", "StatusDesc"=>"SUCCESS" })
+      message: ERRORS_MESSAGES[:"#{status_code}"] || "#{status_code} #{status_description}",
+    } unless response_status == { "StatusCode" => "0", "StatusDesc" => "SUCCESS" }
 
     response_any = response["ResponseMessage"]["ResponseBody"]["any"]
     success_id = response_any["unregisteredPaymentRS"]["transactionId"]
-    Nequi::StatusCheckJob.set(wait: 2.minutes).perform_later(product_id, configuration, access_token, success_id)
-    { type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
+
+    {token: access_token, success_id: success_id, type: 'success', status: response.code, api_status: status_code, message: 'Payment request send success fully'}
   end
 end
